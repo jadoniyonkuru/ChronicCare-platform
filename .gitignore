@@ -1,0 +1,144 @@
+# ============================================================
+# ChronicCare Pro — .gitignore
+# Nothing sensitive, generated, or environment-specific should
+# ever be pushed. When in doubt, keep it out of git.
+# ============================================================
+
+# ---- Secrets, credentials, keys, certificates ----
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+*.jks
+*.keystore
+*credentials*.json
+*secret*
+*secrets*
+!**/secrets/README.md
+service-account*.json
+firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+id_rsa*
+id_ed25519*
+*.ppk
+.npmrc
+.pypirc
+*.pgpass
+
+# ---- Patient / clinical / PHI data (never commit real or synthetic PHI) ----
+data/seed-data/**
+!data/seed-data/.gitkeep
+!data/seed-data/README.md
+data/analytics-warehouse/**
+!data/analytics-warehouse/.gitkeep
+!data/analytics-warehouse/README.md
+**/*.phi
+**/*patient-data*
+**/*clinical-data*
+**/*.csv
+**/*.parquet
+**/*.dcm
+!**/sample-*.csv
+compliance/audit-logs/**
+!compliance/audit-logs/.gitkeep
+!compliance/audit-logs/README.md
+
+# ---- AI/ML artifacts (large/binary, often trained on sensitive data) ----
+ai-ml/models/**
+!ai-ml/models/.gitkeep
+!ai-ml/models/README.md
+ai-ml/model-registry/**
+!ai-ml/model-registry/.gitkeep
+!ai-ml/model-registry/README.md
+*.h5
+*.pt
+*.pth
+*.onnx
+*.pkl
+*.joblib
+*.ckpt
+*.safetensors
+mlruns/
+wandb/
+.ipynb_checkpoints/
+
+# ---- Infrastructure state & environment configs ----
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform/
+.terraform.lock.hcl
+infrastructure/environments/**/*.env
+infrastructure/environments/**/secrets/
+kubeconfig
+kubeconfig.yaml
+*.kubeconfig
+helm-values*.yaml
+!helm-values*.example.yaml
+
+# ---- Config (per-environment, may hold connection strings/keys) ----
+config/dev/**
+config/staging/**
+config/production/**
+!config/*/.gitkeep
+!config/*/README.md
+!config/*/*.example.*
+
+# ---- Dependencies ----
+node_modules/
+vendor/
+venv/
+.venv/
+__pycache__/
+*.pyc
+Pods/
+.gradle/
+
+# ---- Build output ----
+dist/
+build/
+out/
+.next/
+.expo/
+*.apk
+*.aab
+*.ipa
+android/app/build/
+ios/build/
+*.xcarchive
+
+# ---- Logs & runtime data ----
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+tmp/
+temp/
+
+# ---- OS / editor files ----
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# ---- Test & coverage output ----
+coverage/
+.nyc_output/
+test-results/
+tests/**/__snapshots__/
+
+# ---- Misc local overrides ----
+*.local
+docker-compose.override.yml
