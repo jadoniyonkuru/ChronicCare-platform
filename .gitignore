@@ -107,6 +107,7 @@ dist/
 build/
 out/
 .next/
+*.tsbuildinfo
 .expo/
 *.apk
 *.aab
