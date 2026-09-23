@@ -2,7 +2,26 @@
 
 Intelligent Chronic Disease Management Platform — mobile-first healthcare platform helping patients manage diabetes, hypertension, COPD, and heart disease through AI-driven insights, continuous monitoring, medication adherence tracking, and personalized recommendations.
 
-> This repository currently contains the **project folder structure only**. No application code has been implemented yet — see `PROJECT_STRUCTURE.md` for the full layout and rationale.
+[![medication-service CI](https://github.com/jadoniyonkuru/ChronicCare-platform/actions/workflows/medication-service.yml/badge.svg)](https://github.com/jadoniyonkuru/ChronicCare-platform/actions/workflows/medication-service.yml)
+
+> **Status:** early development, built step by step. See the [roadmap](docs/product/roadmap/roadmap.md) for what's next.
+
+## What works today
+
+| Component | Status | Stack |
+|---|---|---|
+| [services/medication-service](services/medication-service/) | Service skeleton with health check, tests and CI | TypeScript, NestJS 12, Vitest |
+
+Folders not listed above are planned but not yet implemented. See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for the full layout and rationale, and the [architecture decisions](docs/architecture/adr/) for why things are built the way they are.
+
+## Quick start
+
+```bash
+cd services/medication-service
+npm install
+npm run start:dev
+curl http://localhost:3001/health
+```
 
 ## Repository Map
 
