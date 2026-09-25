@@ -22,6 +22,22 @@ jobs:
   ci:
     name: Lint, test, build
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: chroniccare
+          POSTGRES_PASSWORD: chroniccare
+          POSTGRES_DB: chroniccare_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U chroniccare -d chroniccare_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     defaults:
       run:
         working-directory: services/medication-service
@@ -40,4 +56,7 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run test:e2e
+      - run: npm run test:int
+        env:
+          TEST_DATABASE_URL: postgres://chroniccare:chroniccare@localhost:5432/chroniccare_test
       - run: npm run build
