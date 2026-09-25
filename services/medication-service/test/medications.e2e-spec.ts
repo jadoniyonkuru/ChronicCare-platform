@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
+import { DATABASE } from '../src/database/database.types.js';
 
 const PATIENT = '5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01';
 const BASE = `/api/v1/patients/${PATIENT}/medications`;
@@ -21,7 +22,11 @@ describe('Medications (e2e)', () => {
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      // Always run e2e tests in-memory, even if .env sets DATABASE_URL.
+      .overrideProvider(DATABASE)
+      .useValue(null)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     configureApp(app);
