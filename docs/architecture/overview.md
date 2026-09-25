@@ -57,6 +57,6 @@ Cutting across all of the above: **infrastructure/** (hosting, CI/CD, observabil
 This is a structural sketch, not a final design. Concrete decisions still to be made (tracked as they happen, one small piece at a time):
 - [ ] Client app stack (e.g. React Native vs Flutter for `apps/mobile-app`)
 - [x] Backend language/framework per service: TypeScript + NestJS ([ADR 0001](adr/0001-backend-stack.md))
-- [ ] Database choice(s) for `data/`
+- [x] Database choice(s): PostgreSQL with Kysely ([ADR 0002](adr/0002-database.md))
 - [ ] Hosting/cloud provider for `infrastructure/`
 - [ ] Auth approach (`services/auth-service`)

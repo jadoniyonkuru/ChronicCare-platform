@@ -32,4 +32,4 @@ The ML work in `ai-ml/` is exempt and may use Python, since that ecosystem is fa
 - The patient app (React Native) and provider portal (React/Next.js) can share TypeScript types with the services through `shared/types`.
 - NestJS modules map directly onto the service boundaries in the overview.
 - Every new service follows the `medication-service` layout: `app.setup.ts` for shared app configuration, a `health` module, and its own CI workflow.
-- Still undecided: database (see the [overview](../overview.md#status)). It will get its own ADR when the medication data needs persistence.
+- Database: PostgreSQL with Kysely, see [ADR 0002](0002-database.md).
