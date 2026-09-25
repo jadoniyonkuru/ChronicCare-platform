@@ -10,7 +10,7 @@ Intelligent Chronic Disease Management Platform — mobile-first healthcare plat
 
 | Component | Status | Stack |
 |---|---|---|
-| [services/medication-service](services/medication-service/) | Medication schedules API (add, list, update, delete) stored in PostgreSQL, with validation, unit/e2e/integration tests and CI | TypeScript, NestJS 12, PostgreSQL 18, Kysely, Vitest |
+| [backend/medication-service](backend/medication-service/) | Medication schedules API (add, list, update, delete) stored in PostgreSQL, with validation, unit/e2e/integration tests and CI | TypeScript, NestJS 12, PostgreSQL 18, Kysely, Vitest |
 
 Folders not listed above are planned but not yet implemented. See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for the full layout and rationale, and the [architecture decisions](docs/architecture/adr/) for why things are built the way they are.
 
@@ -20,7 +20,7 @@ Requires Node.js 24+ and Docker.
 
 ```bash
 docker compose up -d                 # PostgreSQL for local development
-cd services/medication-service
+cd backend/medication-service
 cp .env.example .env
 npm install
 npm run start:dev

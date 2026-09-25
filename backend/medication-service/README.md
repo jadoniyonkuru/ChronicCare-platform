@@ -16,7 +16,7 @@ Built with [NestJS](https://nestjs.com/) (TypeScript, ES modules) and [PostgreSQ
 # From the repository root: start PostgreSQL
 docker compose up -d
 
-cd services/medication-service
+cd backend/medication-service
 cp .env.example .env
 npm install
 npm run start:dev

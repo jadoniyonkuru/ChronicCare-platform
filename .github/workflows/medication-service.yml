@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'services/medication-service/**'
+      - 'backend/medication-service/**'
       - '.github/workflows/medication-service.yml'
   pull_request:
     paths:
-      - 'services/medication-service/**'
+      - 'backend/medication-service/**'
       - '.github/workflows/medication-service.yml'
 
 permissions:
@@ -40,7 +40,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: services/medication-service
+        working-directory: backend/medication-service
 
     steps:
       - uses: actions/checkout@v7
@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: services/medication-service/package-lock.json
+          cache-dependency-path: backend/medication-service/package-lock.json
 
       - run: npm ci
       - run: npm run lint
