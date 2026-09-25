@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { App } from 'supertest/types';
+import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { DATABASE } from '../src/database/database.types.js';
@@ -74,8 +74,8 @@ describe('Medications (e2e)', () => {
       ['non date-only start', { ...metformin, startDate: '2026-09-01T10:00' }],
       ['end before start', { ...metformin, endDate: '2026-08-01' }],
       ['unknown field', { ...metformin, isAdmin: true }],
-    ])('rejects %s with 400', (_case, body) => {
-      return request(app.getHttpServer()).post(BASE).send(body).expect(400);
+    ])('rejects %s with 400', async (_case, body) => {
+      await request(app.getHttpServer()).post(BASE).send(body).expect(400);
     });
 
     it('rejects a non-UUID patient id with 400', () => {
