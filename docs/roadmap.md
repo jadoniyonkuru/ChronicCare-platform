@@ -7,8 +7,8 @@ The build order for ChronicCare Pro, in small working slices. Each item is check
 - [x] `medication-service` scaffold with health check, tests and CI
 - [x] Medications: add, list, update, delete, with validation
 - [x] PostgreSQL storage with migrations and integration tests
-- [ ] Dose logging: record a dose as taken or skipped
-- [ ] Adherence: percentage of scheduled doses taken over a period
+- [x] Dose logging: record a dose as taken or skipped
+- [x] Adherence: percentage of scheduled doses taken over a period
 - [ ] OpenAPI (Swagger) documentation
 
 ## Milestone 2: Accounts and security

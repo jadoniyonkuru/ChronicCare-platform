@@ -47,7 +47,11 @@ curl http://localhost:3001/health
 | `GET` | `/api/v1/patients/:patientId/medications` | List a patient's medications, sorted by name |
 | `GET` | `/api/v1/patients/:patientId/medications/:id` | Get one medication |
 | `PATCH` | `/api/v1/patients/:patientId/medications/:id` | Update some fields of a medication |
-| `DELETE` | `/api/v1/patients/:patientId/medications/:id` | Remove a medication |
+| `DELETE` | `/api/v1/patients/:patientId/medications/:id` | Remove a medication and its dose logs |
+| `PUT` | `/api/v1/patients/:patientId/medications/:medicationId/doses/:date/:time` | Record a scheduled dose as taken or skipped (logging again corrects it) |
+| `GET` | `/api/v1/patients/:patientId/medications/:medicationId/doses?from&to` | List logged doses for a date range |
+| `DELETE` | `/api/v1/patients/:patientId/medications/:medicationId/doses/:date/:time` | Undo a logged dose |
+| `GET` | `/api/v1/patients/:patientId/adherence?from&to` | Adherence report across all medications |
 
 All feature endpoints live under the versioned prefix `/api/v1`. Patient and medication ids are UUIDs. The patient id is in the URL for now; it will come from the logged-in user once `auth-service` exists.
 
@@ -70,6 +74,45 @@ curl -X POST http://localhost:3001/api/v1/patients/5f0c7a1e-8a51-4a8e-9a4b-1f7c3
   -d '{"name":"Metformin","dosage":"500 mg","timesOfDay":["08:00","20:00"],"startDate":"2026-09-01"}'
 ```
 
+### Logging doses
+
+A dose is identified by its medication, date (`YYYY-MM-DD`) and time (`HH:mm`). The time must be one of the medication's `timesOfDay`, and the date must fall within its treatment period.
+
+| Field | Type | Rules |
+|---|---|---|
+| `status` | `"taken"` or `"skipped"` | Required |
+| `takenAt` | ISO 8601 date-time | Optional for `taken` (defaults to now, must not be in the future); not allowed for `skipped` |
+| `note` | string | Optional, max 500 characters |
+
+```bash
+curl -X PUT http://localhost:3001/api/v1/patients/<patientId>/medications/<medicationId>/doses/2026-09-25/08:00 \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"taken"}'
+```
+
+Date ranges (`from`, `to`) default to the last 30 days up to today and can span at most 366 days.
+
+### Adherence
+
+Adherence is the share of due doses that were taken:
+
+- **taken** and **skipped** doses come from the logs; both count as due.
+- **missed**: a dose scheduled before today that was never logged.
+- **pending**: a dose scheduled today that is not logged yet. It is not counted as due, so a patient is not penalised in the morning for an evening dose.
+- Days after today and days outside a medication's treatment period are ignored.
+- The overall percentage is weighted by number of doses, not averaged per medication.
+
+```json
+{
+  "from": "2026-09-24", "to": "2026-09-26",
+  "due": 5, "taken": 3, "skipped": 1, "missed": 1, "pending": 1,
+  "adherencePercent": 60,
+  "medications": [{ "medicationId": "…", "name": "Metformin", "due": 5, "taken": 3, "…": "…" }]
+}
+```
+
+Dates are treated as the patient's local calendar dates. Until patient profiles have a timezone, "today" is the server's UTC date, and doses may be logged up to one day ahead of it.
+
 ## Scripts
 
 | Command | What it does |
@@ -91,7 +134,10 @@ src/
 ├── main.ts          # Entry point: creates the app and starts listening
 ├── app.module.ts    # Root module
 ├── app.setup.ts     # App-wide config shared by main.ts and e2e tests
+├── adherence/       # Adherence calculation and report endpoint
+├── common/          # Clock, date helpers, shared validators
 ├── database/        # Kysely client, table types, migrations
+├── doses/           # Dose logging: controller, service, repositories, DTOs
 ├── health/          # GET /health
 └── medications/     # Medication schedules: controller, service, repositories, DTOs
 test/                # End-to-end (*.e2e-spec.ts) and integration (*.int-spec.ts) tests

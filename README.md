@@ -10,7 +10,7 @@ A chronic disease management platform that helps patients with diabetes, hyperte
 
 | Component | Status |
 |---|---|
-| [backend/medication-service](backend/medication-service/) | Medication schedules API (add, list, update, delete) stored in PostgreSQL, with validation, unit, end-to-end and integration tests, and CI |
+| [backend/medication-service](backend/medication-service/) | Medication schedules, dose logging (taken / skipped) and adherence reports, stored in PostgreSQL, with unit, end-to-end and integration tests and CI |
 | [frontend/](frontend/) | Planned: patient mobile app and provider web portal |
 
 ## Tech stack
