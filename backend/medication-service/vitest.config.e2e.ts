@@ -7,5 +7,9 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    // Generous limits: the first test in a file also pays for loading Nest,
+    // which can take several seconds on slow or antivirus-scanned machines.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });
