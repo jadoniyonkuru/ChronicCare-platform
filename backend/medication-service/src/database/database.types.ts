@@ -18,8 +18,22 @@ export interface MedicationsTable {
   updatedAt: ColumnType<Date, string, string>;
 }
 
+export interface DoseLogsTable {
+  id: string;
+  medicationId: string;
+  patientId: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  status: 'taken' | 'skipped';
+  takenAt: ColumnType<Date | null, string | null, string | null>;
+  note: string | null;
+  createdAt: ColumnType<Date, string, string>;
+  updatedAt: ColumnType<Date, string, string>;
+}
+
 export interface Database {
   medications: MedicationsTable;
+  doseLogs: DoseLogsTable;
 }
 
 export type DatabaseClient = Kysely<Database>;
