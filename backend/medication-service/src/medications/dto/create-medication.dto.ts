@@ -3,16 +3,12 @@ import {
   ArrayMinSize,
   ArrayUnique,
   IsArray,
-  IsISO8601,
   IsNotEmpty,
   IsOptional,
   IsString,
-  Matches,
   MaxLength,
 } from 'class-validator';
-
-const TIME_OF_DAY = /^([01]\d|2[0-3]):[0-5]\d$/;
-const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+import { IsDateOnly, IsTimeOfDay } from '../../common/validation.js';
 
 export class CreateMedicationDto {
   @IsString()
@@ -29,10 +25,7 @@ export class CreateMedicationDto {
   @ArrayMinSize(1)
   @ArrayMaxSize(12)
   @ArrayUnique()
-  @Matches(TIME_OF_DAY, {
-    each: true,
-    message: 'each value in timesOfDay must be a 24h time in HH:mm format',
-  })
+  @IsTimeOfDay({ each: true })
   timesOfDay: string[];
 
   @IsOptional()
@@ -40,12 +33,10 @@ export class CreateMedicationDto {
   @MaxLength(500)
   instructions?: string;
 
-  @Matches(DATE_ONLY, { message: 'startDate must be in YYYY-MM-DD format' })
-  @IsISO8601({ strict: true })
+  @IsDateOnly()
   startDate: string;
 
   @IsOptional()
-  @Matches(DATE_ONLY, { message: 'endDate must be in YYYY-MM-DD format' })
-  @IsISO8601({ strict: true })
+  @IsDateOnly()
   endDate?: string | null;
 }
