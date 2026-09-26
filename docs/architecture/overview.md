@@ -1,62 +1,43 @@
 # System Architecture Overview
 
-Day 1 of building out ChronicCare Pro. This document describes, at a high level, how the pieces defined in [PROJECT_STRUCTURE.md](../../PROJECT_STRUCTURE.md) fit together. It will evolve as real architecture decisions (stack, hosting, data flow details) are made.
+How the pieces of ChronicCare Pro fit together: what exists today and where planned parts will go. Folder layout is described in [ADR 0003](adr/0003-repository-layout.md).
 
 ## High-level flow
 
 ```
-                         ┌─────────────────────┐
-                         │   Patients / Users    │
-                         └──────────┬───────────┘
+                  Patients                 Doctors / care teams
+                     │                              │
+        frontend/patient-app            frontend/provider-portal
+        (React Native, Expo)                 (Next.js)
+                     │                              │
+                     └──────────────┬───────────────┘
+                                    │  HTTPS + JSON
                                     │
-                       ┌────────────┴────────────┐
-                       │                          │
-              apps/mobile-app          apps/provider-portal
-              (patient app)              (clinician/provider)
-                       │                          │
-                       └────────────┬─────────────┘
+        ┌───────────────────────────┼──────────────────────────┐
+        │                           │                          │
+ backend/auth-service   backend/medication-service   backend/monitoring-service
+     (planned)              (built: NestJS)                (planned)
+        │                           │                          │
+        └───────────────────────────┼──────────────────────────┘
                                     │
-                          services/api-gateway
-                     (single entry point, auth check,
-                            routing, rate limiting)
-                                    │
-        ┌────────────┬─────────────┼─────────────┬────────────┐
-        │             │             │             │            │
-  auth-service  medication-   monitoring-   insights-    community-/
-                service        service       service    provider-/
-                                                          billing-/
-                                                       reporting-service
-        │             │             │             │            │
-        └─────────────┴─────────────┴──────┬──────┴────────────┘
-                                            │
-                          ┌─────────────────┴────────────────┐
-                          │                                   │
-                       data/                              ai-ml/
-              (schemas, migrations,                 (models, training
-               analytics warehouse)               pipelines, evaluation)
-                          │                                   │
-                          └─────────────────┬─────────────────┘
-                                            │
-                                integrations/
-                 (wearables, EHR/FHIR, pharmacy, insurers, telehealth)
+                              PostgreSQL 18
+                     (each service owns its own tables)
 ```
 
-Cutting across all of the above: **infrastructure/** (hosting, CI/CD, observability) and **compliance/** (HIPAA, security policy, audit logging, data privacy) apply to every layer, not just one — every service that touches patient data must go through them.
+Planned later: an API gateway in front of the services, AI/ML insights (Python), and integrations with wearables, EHR/FHIR systems and pharmacies.
 
 ## Layers
 
-1. **Client apps** (`apps/`) — patient mobile app, provider web portal, internal admin portal. These never talk to services directly; everything goes through the gateway.
-2. **API gateway** (`services/api-gateway`) — single entry point. Handles routing, auth verification, and rate limiting before requests reach any backend service.
-3. **Backend services** (`services/`) — one service per bounded capability (medication, monitoring, insights, community, provider, billing, reporting, notifications). Each owns its own data and can scale independently.
-4. **Data & AI/ML** (`data/`, `ai-ml/`) — persistent storage (schemas, migrations, analytics warehouse) and the predictive/insights engine that reads from it.
-5. **Integrations** (`integrations/`) — the boundary to the outside world: wearables, EHR/FHIR systems, pharmacy APIs, insurance payers, telehealth providers.
-6. **Cross-cutting concerns** (`infrastructure/`, `compliance/`) — apply to every layer above: deployment, monitoring, HIPAA safeguards, audit logging.
+1. **Frontend** (`frontend/`): the patient app and provider portal. They only talk to the backend over HTTP; they never touch the database.
+2. **Backend** (`backend/`): one NestJS service per capability (medications, auth, monitoring, ...). Each service owns its data and has its own tests and CI.
+3. **Data**: PostgreSQL, with schema changes as versioned migrations inside each service ([ADR 0002](adr/0002-database.md)).
+4. **Infrastructure** (`infrastructure/`, `docker-compose.yml`, `.github/`): local Docker setup and CI. Security and privacy rules (HIPAA-style audit logging, access control) apply to every service that handles patient data.
 
-## Status
+## Decisions
 
-This is a structural sketch, not a final design. Concrete decisions still to be made (tracked as they happen, one small piece at a time):
-- [ ] Client app stack (e.g. React Native vs Flutter for `apps/mobile-app`)
-- [x] Backend language/framework per service: TypeScript + NestJS ([ADR 0001](adr/0001-backend-stack.md))
-- [x] Database choice(s): PostgreSQL with Kysely ([ADR 0002](adr/0002-database.md))
-- [ ] Hosting/cloud provider for `infrastructure/`
-- [ ] Auth approach (`services/auth-service`)
+- [x] Backend: TypeScript + NestJS ([ADR 0001](adr/0001-backend-stack.md))
+- [x] Database: PostgreSQL with Kysely ([ADR 0002](adr/0002-database.md))
+- [x] Repository layout: frontend/backend split ([ADR 0003](adr/0003-repository-layout.md))
+- [ ] Frontend stack: React Native with Expo for the patient app, Next.js for the provider portal (planned; ADR when the first app starts)
+- [ ] Authentication approach (`backend/auth-service`)
+- [ ] Hosting / cloud provider
