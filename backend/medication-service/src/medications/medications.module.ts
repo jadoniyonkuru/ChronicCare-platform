@@ -10,6 +10,7 @@ import { PostgresMedicationsRepository } from './postgres-medications.repository
 
 @Module({
   controllers: [MedicationsController],
+  exports: [MedicationsService],
   providers: [
     MedicationsService,
     {
