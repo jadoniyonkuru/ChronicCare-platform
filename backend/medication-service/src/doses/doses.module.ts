@@ -25,5 +25,6 @@ import { PostgresDoseLogsRepository } from './postgres-dose-logs.repository.js';
           : new InMemoryDoseLogsRepository(),
     },
   ],
+  exports: [DoseLogsRepository, Clock],
 })
 export class DosesModule {}

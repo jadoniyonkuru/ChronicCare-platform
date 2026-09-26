@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AdherenceModule } from './adherence/adherence.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { DosesModule } from './doses/doses.module.js';
 import { HealthModule } from './health/health.module.js';
@@ -12,6 +13,7 @@ import { MedicationsModule } from './medications/medications.module.js';
     HealthModule,
     MedicationsModule,
     DosesModule,
+    AdherenceModule,
   ],
 })
 export class AppModule {}
