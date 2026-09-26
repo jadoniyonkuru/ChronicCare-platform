@@ -1,25 +1,53 @@
 # ChronicCare Pro
 
-Intelligent Chronic Disease Management Platform — mobile-first healthcare platform helping patients manage diabetes, hypertension, COPD, and heart disease through AI-driven insights, continuous monitoring, medication adherence tracking, and personalized recommendations.
+A chronic disease management platform that helps patients with diabetes, hypertension, COPD and heart disease stay on top of their medication, with care teams able to follow their progress.
 
 [![medication-service CI](https://github.com/jadoniyonkuru/ChronicCare-platform/actions/workflows/medication-service.yml/badge.svg)](https://github.com/jadoniyonkuru/ChronicCare-platform/actions/workflows/medication-service.yml)
 
-> **Status:** early development, built step by step. See the [roadmap](docs/product/roadmap/roadmap.md) for what's next.
+> **Status:** early development, built in small tested steps. See the [roadmap](docs/roadmap.md) for what's done and what's next.
 
 ## What works today
 
-| Component | Status | Stack |
-|---|---|---|
-| [backend/medication-service](backend/medication-service/) | Medication schedules API (add, list, update, delete) stored in PostgreSQL, with validation, unit/e2e/integration tests and CI | TypeScript, NestJS 12, PostgreSQL 18, Kysely, Vitest |
+| Component | Status |
+|---|---|
+| [backend/medication-service](backend/medication-service/) | Medication schedules API (add, list, update, delete) stored in PostgreSQL, with validation, unit, end-to-end and integration tests, and CI |
+| [frontend/](frontend/) | Planned: patient mobile app and provider web portal |
 
-Folders not listed above are planned but not yet implemented. See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for the full layout and rationale, and the [architecture decisions](docs/architecture/adr/) for why things are built the way they are.
+## Tech stack
+
+| Area | Technology |
+|---|---|
+| Backend | TypeScript, Node.js 24, NestJS 12 |
+| Database | PostgreSQL 18, Kysely (queries and migrations) |
+| Testing | Vitest, Supertest |
+| Code quality | oxlint, Prettier, TypeScript type-checking |
+| Frontend (planned) | React Native with Expo (patient app), Next.js (provider portal) |
+| Infrastructure | Docker Compose, GitHub Actions |
+
+The reasons behind each choice are recorded in the [architecture decision records](docs/architecture/adr/).
+
+## Project structure
+
+```
+ChronicCare-platform/
+├── backend/
+│   └── medication-service/    # Medication schedules API (NestJS + PostgreSQL)
+├── frontend/                  # Patient app and provider portal (planned)
+├── docs/
+│   ├── architecture/          # System overview and decision records (ADRs)
+│   └── roadmap.md             # Build order and progress
+├── infrastructure/
+│   └── docker/                # Database initialisation scripts
+├── .github/workflows/         # CI: lint, type-check, tests, build
+└── docker-compose.yml         # Local PostgreSQL
+```
 
 ## Quick start
 
 Requires Node.js 24+ and Docker.
 
 ```bash
-docker compose up -d                 # PostgreSQL for local development
+docker compose up -d                 # start PostgreSQL
 cd backend/medication-service
 cp .env.example .env
 npm install
@@ -27,22 +55,10 @@ npm run start:dev
 curl http://localhost:3001/health
 ```
 
-## Repository Map
+See the [medication-service README](backend/medication-service/README.md) for the API and test commands.
 
-| Path | Purpose |
-|---|---|
-| [apps/](apps/) | End-user applications: patient mobile app, provider web portal, internal admin portal |
-| [services/](services/) | Backend microservices (medication, monitoring, insights, billing, etc.) |
-| [ai-ml/](ai-ml/) | Machine learning models, training pipelines, and evaluation for predictive/personalized insights |
-| [integrations/](integrations/) | Third-party integrations: wearables, EHR/FHIR, pharmacy, insurance payers, telehealth |
-| [shared/](shared/) | Cross-app shared code: design system, common libraries, shared types/constants |
-| [data/](data/) | Database schemas, migrations, seed data, analytics warehouse definitions |
-| [infrastructure/](infrastructure/) | IaC (Terraform/Kubernetes/Docker), CI/CD, observability, per-environment configs |
-| [compliance/](compliance/) | HIPAA, security policies, audit logging, data privacy (GDPR), certifications |
-| [docs/](docs/) | Architecture docs, API specs, product/business docs, user guides |
-| [tests/](tests/) | Unit, integration, end-to-end, performance, and security tests |
-| [scripts/](scripts/) | Deployment, data migration, and internal tooling scripts |
-| [config/](config/) | Environment-specific application configuration |
-| [.github/](.github/) | GitHub Actions workflows |
+## Documentation
 
-See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for details on how this structure maps to the product proposal.
+- [Architecture overview](docs/architecture/overview.md)
+- [Decision records (ADRs)](docs/architecture/adr/)
+- [Roadmap](docs/roadmap.md)
