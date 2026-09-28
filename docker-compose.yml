@@ -1,4 +1,6 @@
-# Local development infrastructure. Start with: docker compose up -d
+# Runs the whole backend locally.
+#   Everything:         docker compose up -d --build
+#   Only the database:  docker compose up -d postgres   (when running the API with npm)
 # Credentials below are for local development only.
 services:
   postgres:
@@ -17,6 +19,16 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  medication-service:
+    build: ./backend/medication-service
+    environment:
+      DATABASE_URL: postgres://chroniccare:chroniccare@postgres:5432/chroniccare
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres-data:
