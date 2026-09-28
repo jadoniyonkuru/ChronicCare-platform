@@ -6,10 +6,14 @@ on:
     paths:
       - 'backend/medication-service/**'
       - '.github/workflows/medication-service.yml'
+      - 'docker-compose.yml'
+      - 'infrastructure/docker/**'
   pull_request:
     paths:
       - 'backend/medication-service/**'
       - '.github/workflows/medication-service.yml'
+      - 'docker-compose.yml'
+      - 'infrastructure/docker/**'
 
 permissions:
   contents: read
@@ -61,3 +65,46 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://chroniccare:chroniccare@localhost:5432/chroniccare_test
       - run: npm run build
+
+  docker:
+    name: Docker image and full-stack smoke test
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and start PostgreSQL and the service
+        run: docker compose up -d --build --wait
+
+      - name: Smoke test the running API
+        run: |
+          set -euo pipefail
+          base=http://localhost:3001
+          patient=5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01
+
+          yesterday=$(date -u -d yesterday +%F)
+          json=(-H "Content-Type: application/json")
+
+          curl -fsS "$base/health"
+          curl -fsS -o /dev/null "$base/docs"
+
+          body=$(jq -nc --arg start "$yesterday" \
+            '{name: "Metformin", dosage: "500 mg", timesOfDay: ["08:00"], startDate: $start}')
+          id=$(curl -fsS -X POST "${json[@]}" -d "$body" \
+            "$base/api/v1/patients/$patient/medications" | jq -r .id)
+
+          curl -fsS -X PUT "${json[@]}" -d '{"status": "taken"}' \
+            "$base/api/v1/patients/$patient/medications/$id/doses/$yesterday/08:00"
+
+          adherence=$(curl -fsS "$base/api/v1/patients/$patient/adherence")
+          echo "$adherence"
+          test "$(echo "$adherence" | jq .adherencePercent)" = "100"
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
