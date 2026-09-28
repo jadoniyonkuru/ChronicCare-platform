@@ -5,10 +5,8 @@ import { resolveDateRange } from '../doses/date-range.js';
 import { DoseLogsRepository } from '../doses/dose-logs.repository.js';
 import type { DateRangeQueryDto } from '../doses/dto/date-range-query.dto.js';
 import { MedicationsService } from '../medications/medications.service.js';
-import {
-  type AdherenceReport,
-  calculateAdherence,
-} from './calculate-adherence.js';
+import { calculateAdherence } from './calculate-adherence.js';
+import type { AdherenceReport } from './entities/adherence-report.entity.js';
 
 @Injectable()
 export class AdherenceService {

@@ -1,13 +1,22 @@
 import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { DateRangeQueryDto } from '../doses/dto/date-range-query.dto.js';
 import { AdherenceService } from './adherence.service.js';
-import type { AdherenceReport } from './calculate-adherence.js';
+import { AdherenceReport } from './entities/adherence-report.entity.js';
 
+@ApiTags('adherence')
 @Controller('patients/:patientId/adherence')
 export class AdherenceController {
   constructor(private readonly adherenceService: AdherenceService) {}
 
+  /**
+   * Adherence report across all of the patient's medications.
+   *
+   * @remarks Skipped and missed doses count against adherence. Today's doses only
+   * count once logged. Defaults to the last 30 days.
+   */
   @Get()
+  @ApiBadRequestResponse({ description: 'Invalid patient id or date range' })
   report(
     @Param('patientId', ParseUUIDPipe) patientId: string,
     @Query() query: DateRangeQueryDto,

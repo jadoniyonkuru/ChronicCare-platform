@@ -2,7 +2,7 @@ export const DOSE_STATUSES = ['taken', 'skipped'] as const;
 export type DoseStatus = (typeof DOSE_STATUSES)[number];
 
 /** What happened to one scheduled dose of a medication. */
-export interface DoseLog {
+export class DoseLog {
   id: string;
   medicationId: string;
   patientId: string;

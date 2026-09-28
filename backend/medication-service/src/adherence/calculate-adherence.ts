@@ -1,30 +1,10 @@
 import { addDays, daysInclusive, maxDate, minDate } from '../common/dates.js';
 import type { DoseLog } from '../doses/entities/dose-log.entity.js';
 import type { Medication } from '../medications/entities/medication.entity.js';
-
-export interface AdherenceCounts {
-  /** Doses that were due: taken + skipped + missed. */
-  due: number;
-  taken: number;
-  skipped: number;
-  /** Doses scheduled before today that were never logged. */
-  missed: number;
-  /** Doses scheduled today that are not logged yet; not counted as due. */
-  pending: number;
-  /** taken / due as a percentage with one decimal, or null if nothing was due. */
-  adherencePercent: number | null;
-}
-
-export interface MedicationAdherence extends AdherenceCounts {
-  medicationId: string;
-  name: string;
-}
-
-export interface AdherenceReport extends AdherenceCounts {
-  from: string;
-  to: string;
-  medications: MedicationAdherence[];
-}
+import type {
+  AdherenceReport,
+  MedicationAdherence,
+} from './entities/adherence-report.entity.js';
 
 export interface AdherenceInput {
   medications: Medication[];

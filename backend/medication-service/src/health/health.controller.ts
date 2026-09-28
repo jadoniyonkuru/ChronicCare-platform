@@ -1,14 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { HealthStatus } from './health-status.entity.js';
 
-export interface HealthStatus {
-  status: 'ok';
-  service: string;
-  uptimeSeconds: number;
-  timestamp: string;
-}
-
+@ApiTags('health')
 @Controller('health')
 export class HealthController {
+  /** Check that the service is running. */
   @Get()
   check(): HealthStatus {
     return {

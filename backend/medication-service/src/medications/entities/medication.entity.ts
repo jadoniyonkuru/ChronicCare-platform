@@ -1,4 +1,4 @@
-export interface Medication {
+export class Medication {
   id: string;
   patientId: string;
   name: string;
