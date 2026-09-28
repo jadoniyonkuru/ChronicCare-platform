@@ -12,17 +12,32 @@ Built with [NestJS](https://nestjs.com/) (TypeScript, ES modules) and [PostgreSQ
 
 ## Getting started
 
+### Run with Docker (no Node.js needed)
+
 ```bash
-# From the repository root: start PostgreSQL
-docker compose up -d
+# From the repository root
+docker compose up -d --build
+docker compose exec medication-service node dist/database/seed.js   # optional demo data
+```
+
+### Develop with hot reload
+
+```bash
+# From the repository root: start only PostgreSQL
+docker compose up -d postgres
 
 cd backend/medication-service
 cp .env.example .env
 npm install
 npm run start:dev
+npm run build && npm run db:seed   # optional demo data
 ```
 
-The service listens on port `3001` by default (override with `PORT`).
+The service listens on port `3001` by default (override with `PORT`). Interactive API documentation is at **http://localhost:3001/docs**, and the raw OpenAPI document at `/docs/openapi.json`.
+
+### Demo data
+
+The seed script creates a demo patient (`5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01`) with Metformin, Lisinopril and Atorvastatin and a realistic 30-day history of taken, skipped and missed doses. It is deterministic and safe to re-run; it only replaces the demo patient's data.
 
 ## Storage
 
@@ -119,6 +134,7 @@ Dates are treated as the patient's local calendar dates. Until patient profiles 
 |---|---|
 | `npm run start:dev` | Run with hot reload |
 | `npm run build` | Compile to `dist/` |
+| `npm run db:seed` | Load demo data into `DATABASE_URL` (run `npm run build` first) |
 | `npm test` | Unit tests |
 | `npm run test:e2e` | End-to-end tests against the full HTTP app (always in-memory) |
 | `npm run test:int` | Integration tests against real PostgreSQL (needs `TEST_DATABASE_URL`) |

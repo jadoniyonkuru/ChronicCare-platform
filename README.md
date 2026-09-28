@@ -10,7 +10,7 @@ A chronic disease management platform that helps patients with diabetes, hyperte
 
 | Component | Status |
 |---|---|
-| [backend/medication-service](backend/medication-service/) | Medication schedules, dose logging (taken / skipped) and adherence reports, stored in PostgreSQL, with unit, end-to-end and integration tests and CI |
+| [backend/medication-service](backend/medication-service/) | Medication schedules, dose logging (taken / skipped) and adherence reports, stored in PostgreSQL. Swagger API docs, Docker image, demo data, and unit, end-to-end, integration and full-stack tests in CI |
 | [frontend/](frontend/) | Planned: patient mobile app and provider web portal |
 
 ## Tech stack
@@ -38,24 +38,26 @@ ChronicCare-platform/
 │   └── roadmap.md             # Build order and progress
 ├── infrastructure/
 │   └── docker/                # Database initialisation scripts
-├── .github/workflows/         # CI: lint, type-check, tests, build
-└── docker-compose.yml         # Local PostgreSQL
+├── .github/workflows/         # CI: lint, type-check, tests, Docker smoke test
+└── docker-compose.yml         # PostgreSQL + medication-service
 ```
 
 ## Quick start
 
-Requires Node.js 24+ and Docker.
+Only Docker is needed:
 
 ```bash
-docker compose up -d                 # start PostgreSQL
-cd backend/medication-service
-cp .env.example .env
-npm install
-npm run start:dev
-curl http://localhost:3001/health
+docker compose up -d --build                                                 # PostgreSQL + API
+docker compose exec medication-service node dist/database/seed.js           # demo patient
 ```
 
-See the [medication-service README](backend/medication-service/README.md) for the API and test commands.
+Then open **http://localhost:3001/docs** for the interactive API documentation, and try the demo patient's adherence report:
+
+```
+http://localhost:3001/api/v1/patients/5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01/adherence
+```
+
+Stop everything with `docker compose down`. To develop with hot reload instead, see the [medication-service README](backend/medication-service/README.md).
 
 ## Documentation
 

@@ -9,7 +9,8 @@ The build order for ChronicCare Pro, in small working slices. Each item is check
 - [x] PostgreSQL storage with migrations and integration tests
 - [x] Dose logging: record a dose as taken or skipped
 - [x] Adherence: percentage of scheduled doses taken over a period
-- [ ] OpenAPI (Swagger) documentation
+- [x] OpenAPI (Swagger) documentation at `/docs`
+- [x] Docker image, one-command start with Docker Compose, demo data
 
 ## Milestone 2: Accounts and security
 
