@@ -101,6 +101,12 @@ jobs:
           echo "$adherence"
           test "$(echo "$adherence" | jq .adherencePercent)" = "100"
 
+      - name: Load demo data
+        run: |
+          docker compose exec -T medication-service node dist/database/seed.js
+          curl -fsS "http://localhost:3001/api/v1/patients/5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01/adherence" \
+            | jq -e '.adherencePercent > 0 and (.medications | length) == 3'
+
       - name: Show container logs on failure
         if: failure()
         run: docker compose logs
