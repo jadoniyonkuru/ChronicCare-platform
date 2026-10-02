@@ -16,13 +16,16 @@ How the pieces of ChronicCare Pro fit together: what exists today and where plan
         ┌───────────────────────────┼──────────────────────────┐
         │                           │                          │
  backend/auth-service   backend/medication-service   backend/monitoring-service
-     (planned)              (built: NestJS)                (planned)
+   (built: NestJS)          (built: NestJS)                (planned)
+  issues JWT tokens ───────▶ verifies tokens
         │                           │                          │
         └───────────────────────────┼──────────────────────────┘
                                     │
                               PostgreSQL 18
-                     (each service owns its own tables)
+                   (each service owns its own database)
 ```
+
+Clients log in with auth-service and send the access token to every other service. Services verify tokens themselves, without calling auth-service on each request ([ADR 0004](adr/0004-authentication.md)).
 
 Planned later: an API gateway in front of the services, AI/ML insights (Python), and integrations with wearables, EHR/FHIR systems and pharmacies.
 

@@ -68,7 +68,25 @@ curl http://localhost:3001/health
 | `DELETE` | `/api/v1/patients/:patientId/medications/:medicationId/doses/:date/:time` | Undo a logged dose |
 | `GET` | `/api/v1/patients/:patientId/adherence?from&to` | Adherence report across all medications |
 
-All feature endpoints live under the versioned prefix `/api/v1`. Patient and medication ids are UUIDs. The patient id is in the URL for now; it will come from the logged-in user once `auth-service` exists.
+All feature endpoints live under the versioned prefix `/api/v1`. Patient and medication ids are UUIDs.
+
+### Authentication and access
+
+Every endpoint except `/health` and `/docs` needs an access token from [auth-service](../auth-service/), sent as `Authorization: Bearer <token>`. Tokens are verified locally with the shared `JWT_SECRET` ([ADR 0004](../../docs/architecture/adr/0004-authentication.md)).
+
+| Caller | Can do |
+|---|---|
+| No or invalid token | Nothing: `401 Unauthorized` |
+| Patient | Everything on their own data (`:patientId` must be their user id); other patients: `403 Forbidden` |
+| Provider | Read any patient's medications, doses and adherence; changes: `403 Forbidden` |
+
+Provider access will be limited to the provider's own patients once care teams exist.
+
+```bash
+# Log in (see auth-service) and keep the token
+TOKEN=$(curl -s -X POST http://localhost:3002/api/v1/auth/login -H 'Content-Type: application/json' \
+  -d '{"email":"patient@demo.chroniccare.dev","password":"demo-password-2026"}' | jq -r .accessToken)
+```
 
 ### Medication fields
 
@@ -85,7 +103,7 @@ Unknown fields are rejected with `400 Bad Request`. The date range and the numbe
 
 ```bash
 curl -X POST http://localhost:3001/api/v1/patients/5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01/medications \
-  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -d '{"name":"Metformin","dosage":"500 mg","timesOfDay":["08:00","20:00"],"startDate":"2026-09-01"}'
 ```
 
@@ -101,7 +119,7 @@ A dose is identified by its medication, date (`YYYY-MM-DD`) and time (`HH:mm`). 
 
 ```bash
 curl -X PUT http://localhost:3001/api/v1/patients/<patientId>/medications/<medicationId>/doses/2026-09-25/08:00 \
-  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -d '{"status":"taken"}'
 ```
 
@@ -151,6 +169,7 @@ src/
 ├── app.module.ts    # Root module
 ├── app.setup.ts     # App-wide config shared by main.ts and e2e tests
 ├── adherence/       # Adherence calculation and report endpoint
+├── auth/            # Access-token verification and patient access rules
 ├── common/          # Clock, date helpers, shared validators
 ├── database/        # Kysely client, table types, migrations
 ├── doses/           # Dose logging: controller, service, repositories, DTOs

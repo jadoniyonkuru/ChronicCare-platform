@@ -14,8 +14,10 @@ The build order for ChronicCare Pro, in small working slices. Each item is check
 
 ## Milestone 2: Accounts and security
 
-- [ ] `auth-service`: patient and provider registration and login (JWT)
-- [ ] Medication endpoints use the logged-in patient instead of an id in the URL
+- [x] `auth-service`: patient registration and login, JWT access tokens, rate limiting
+- [x] Medication endpoints require a login; patients reach only their own data, providers read-only
+- [ ] Care teams: providers see only the patients they care for
+- [ ] Refresh tokens, so the patient app stays logged in
 - [ ] Audit log of who read or changed patient data
 
 ## Milestone 3: Patient app
