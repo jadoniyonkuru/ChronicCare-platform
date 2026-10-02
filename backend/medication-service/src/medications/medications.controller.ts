@@ -12,17 +12,27 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CreateMedicationDto } from './dto/create-medication.dto.js';
 import { UpdateMedicationDto } from './dto/update-medication.dto.js';
 import { Medication } from './entities/medication.entity.js';
 import { MedicationsService } from './medications.service.js';
 
-// Scoped by patient in the URL until auth-service exists; the patient id will
-// then come from the authenticated user instead.
+// Every route needs an access token; PatientAccessGuard checks that the caller
+// may access :patientId (patients: only themselves; providers: read-only).
 @ApiTags('medications')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({
+  description: 'Missing, invalid or expired access token',
+})
+@ApiForbiddenResponse({
+  description: "Not allowed to access this patient's data",
+})
 @ApiBadRequestResponse({ description: 'Invalid id or request body' })
 @Controller('patients/:patientId/medications')
 export class MedicationsController {

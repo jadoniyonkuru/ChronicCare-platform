@@ -35,6 +35,7 @@ services:
     build: ./backend/medication-service
     environment:
       DATABASE_URL: postgres://chroniccare:chroniccare@postgres:5432/chroniccare
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-0123456789}
     ports:
       - '3001:3001'
     depends_on:

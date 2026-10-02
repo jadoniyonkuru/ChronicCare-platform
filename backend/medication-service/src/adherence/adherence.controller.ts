@@ -1,10 +1,23 @@
 import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { DateRangeQueryDto } from '../doses/dto/date-range-query.dto.js';
 import { AdherenceService } from './adherence.service.js';
 import { AdherenceReport } from './entities/adherence-report.entity.js';
 
 @ApiTags('adherence')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({
+  description: 'Missing, invalid or expired access token',
+})
+@ApiForbiddenResponse({
+  description: "Not allowed to access this patient's data",
+})
 @Controller('patients/:patientId/adherence')
 export class AdherenceController {
   constructor(private readonly adherenceService: AdherenceService) {}

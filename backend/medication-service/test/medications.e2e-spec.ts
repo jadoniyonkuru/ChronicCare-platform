@@ -5,8 +5,10 @@ import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { DATABASE } from '../src/database/database.types.js';
+import { bearer } from './support/tokens.js';
 
 const PATIENT = '5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01';
+const PROVIDER = '7b1d9e2f-3c4a-4b5d-8e6f-0a1b2c3d4e5f';
 const BASE = `/api/v1/patients/${PATIENT}/medications`;
 
 const metformin = {
@@ -18,6 +20,9 @@ const metformin = {
 
 describe('Medications (e2e)', () => {
   let app: INestApplication<App>;
+  /** Requests made as the patient whose data is under test. */
+  const asPatient = () =>
+    request.agent(app.getHttpServer()).set('Authorization', bearer(PATIENT));
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -38,30 +43,25 @@ describe('Medications (e2e)', () => {
   });
 
   it('supports the full create, read, update, delete lifecycle', async () => {
-    const server = app.getHttpServer();
-
-    const created = await request(server)
-      .post(BASE)
-      .send(metformin)
-      .expect(201);
+    const created = await asPatient().post(BASE).send(metformin).expect(201);
     const id: string = created.body.id;
 
-    const list = await request(server).get(BASE).expect(200);
+    const list = await asPatient().get(BASE).expect(200);
     expect(list.body).toHaveLength(1);
 
-    await request(server)
+    await asPatient()
       .get(`${BASE}/${id}`)
       .expect(200)
       .expect((res) => expect(res.body.name).toBe('Metformin'));
 
-    await request(server)
+    await asPatient()
       .patch(`${BASE}/${id}`)
       .send({ dosage: '850 mg' })
       .expect(200)
       .expect((res) => expect(res.body.dosage).toBe('850 mg'));
 
-    await request(server).delete(`${BASE}/${id}`).expect(204);
-    await request(server).get(`${BASE}/${id}`).expect(404);
+    await asPatient().delete(`${BASE}/${id}`).expect(204);
+    await asPatient().get(`${BASE}/${id}`).expect(404);
   });
 
   describe('validation', () => {
@@ -75,23 +75,21 @@ describe('Medications (e2e)', () => {
       ['end before start', { ...metformin, endDate: '2026-08-01' }],
       ['unknown field', { ...metformin, isAdmin: true }],
     ])('rejects %s with 400', async (_case, body) => {
-      await request(app.getHttpServer()).post(BASE).send(body).expect(400);
+      await asPatient().post(BASE).send(body).expect(400);
     });
 
     it('rejects a non-UUID patient id with 400', () => {
+      // A provider may read any patient, so the request reaches validation.
       return request(app.getHttpServer())
         .get('/api/v1/patients/not-a-uuid/medications')
+        .set('Authorization', bearer(PROVIDER, 'provider'))
         .expect(400);
     });
 
     it('rejects null for a required field on update with 400', async () => {
-      const server = app.getHttpServer();
-      const created = await request(server)
-        .post(BASE)
-        .send(metformin)
-        .expect(201);
+      const created = await asPatient().post(BASE).send(metformin).expect(201);
 
-      await request(server)
+      await asPatient()
         .patch(`${BASE}/${created.body.id}`)
         .send({ name: null })
         .expect(400);
@@ -99,7 +97,7 @@ describe('Medications (e2e)', () => {
   });
 
   it('returns 404 for an unknown medication', () => {
-    return request(app.getHttpServer())
+    return asPatient()
       .get(`${BASE}/00000000-0000-4000-8000-000000000000`)
       .expect(404);
   });

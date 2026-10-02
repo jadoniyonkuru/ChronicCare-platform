@@ -11,5 +11,7 @@ export default defineConfig({
     // which can take several seconds on slow or antivirus-scanned machines.
     testTimeout: 30_000,
     hookTimeout: 30_000,
+    // Same value as TEST_JWT_SECRET in test/support/tokens.ts.
+    env: { JWT_SECRET: 'test-secret-that-is-at-least-32-characters' },
   },
 });

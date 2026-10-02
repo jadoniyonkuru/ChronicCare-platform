@@ -11,8 +11,11 @@ import {
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { DosesService } from './doses.service.js';
 import { DateRangeQueryDto } from './dto/date-range-query.dto.js';
@@ -21,6 +24,13 @@ import { RecordDoseDto } from './dto/record-dose.dto.js';
 import { DoseLog } from './entities/dose-log.entity.js';
 
 @ApiTags('doses')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({
+  description: 'Missing, invalid or expired access token',
+})
+@ApiForbiddenResponse({
+  description: "Not allowed to access this patient's data",
+})
 @ApiBadRequestResponse({
   description:
     'Invalid ids, date, time or body, or a dose that is not scheduled',

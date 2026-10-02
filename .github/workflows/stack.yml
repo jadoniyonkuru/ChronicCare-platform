@@ -46,8 +46,9 @@ jobs:
 
           curl -fsS -X POST "${json[@]}" "$auth/register" \
             -d '{"email": "ci@example.com", "password": "ci passphrase 123", "fullName": "CI User"}' > /dev/null
-          token=$(curl -fsS -X POST "${json[@]}" "$auth/login" \
-            -d '{"email": "ci@example.com", "password": "ci passphrase 123"}' | jq -r .accessToken)
+          login=$(curl -fsS -X POST "${json[@]}" "$auth/login" \
+            -d '{"email": "ci@example.com", "password": "ci passphrase 123"}')
+          token=$(echo "$login" | jq -r .accessToken)
           curl -fsS "$auth/me" -H "Authorization: Bearer $token" | jq -e '.role == "patient"'
 
           # A wrong password must be rejected.
@@ -55,26 +56,36 @@ jobs:
             -d '{"email": "ci@example.com", "password": "wrong passphrase"}')
           test "$status" = "401"
 
-      - name: Medication service
+          # Hand the logged-in patient to the next step.
+          echo "PATIENT_ID=$(echo "$login" | jq -r .user.id)" >> "$GITHUB_ENV"
+          echo "TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Medication service, using the token from auth-service
         run: |
           set -euo pipefail
-          base=http://localhost:3001
-          patient=5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01
+          base=http://localhost:3001/api/v1/patients/$PATIENT_ID
           yesterday=$(date -u -d yesterday +%F)
           json=(-H "Content-Type: application/json")
+          auth=(-H "Authorization: Bearer $TOKEN")
 
-          curl -fsS "$base/health"
-          curl -fsS -o /dev/null "$base/docs"
+          curl -fsS http://localhost:3001/health
+          curl -fsS -o /dev/null http://localhost:3001/docs
+
+          # Without a token the API is closed.
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$base/medications")" = "401"
 
           body=$(jq -nc --arg start "$yesterday" \
             '{name: "Metformin", dosage: "500 mg", timesOfDay: ["08:00"], startDate: $start}')
-          id=$(curl -fsS -X POST "${json[@]}" -d "$body" \
-            "$base/api/v1/patients/$patient/medications" | jq -r .id)
+          id=$(curl -fsS -X POST "${json[@]}" "${auth[@]}" -d "$body" "$base/medications" | jq -r .id)
 
-          curl -fsS -X PUT "${json[@]}" -d '{"status": "taken"}' \
-            "$base/api/v1/patients/$patient/medications/$id/doses/$yesterday/08:00"
+          curl -fsS -X PUT "${json[@]}" "${auth[@]}" -d '{"status": "taken"}' \
+            "$base/medications/$id/doses/$yesterday/08:00"
 
-          curl -fsS "$base/api/v1/patients/$patient/adherence" | jq -e '.adherencePercent == 100'
+          curl -fsS "${auth[@]}" "$base/adherence" | jq -e '.adherencePercent == 100'
+
+          # The same token must not open another patient's data.
+          other=http://localhost:3001/api/v1/patients/5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01
+          test "$(curl -s -o /dev/null -w '%{http_code}' "${auth[@]}" "$other/medications")" = "403"
 
       - name: Demo data
         run: |
@@ -82,11 +93,18 @@ jobs:
           docker compose exec -T auth-service node dist/database/seed.js
           docker compose exec -T medication-service node dist/database/seed.js
 
-          curl -fsS -X POST -H "Content-Type: application/json" http://localhost:3002/api/v1/auth/login \
-            -d '{"email": "patient@demo.chroniccare.dev", "password": "demo-password-2026"}' \
-            | jq -e '.user.id == "5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01"'
-          curl -fsS "http://localhost:3001/api/v1/patients/5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01/adherence" \
-            | jq -e '.adherencePercent > 0 and (.medications | length) == 3'
+          login() {
+            curl -fsS -X POST -H "Content-Type: application/json" http://localhost:3002/api/v1/auth/login \
+              -d "{\"email\": \"$1@demo.chroniccare.dev\", \"password\": \"demo-password-2026\"}" \
+              | jq -r .accessToken
+          }
+          adherence=http://localhost:3001/api/v1/patients/5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01/adherence
+
+          # The demo patient and the demo provider can both see the report.
+          for who in patient provider; do
+            curl -fsS -H "Authorization: Bearer $(login "$who")" "$adherence" \
+              | jq -e '.adherencePercent > 0 and (.medications | length) == 3'
+          done
 
       - name: Show container logs on failure
         if: failure()
