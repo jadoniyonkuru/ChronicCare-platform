@@ -39,5 +39,5 @@ Planned later: an API gateway in front of the services, AI/ML insights (Python),
 - [x] Database: PostgreSQL with Kysely ([ADR 0002](adr/0002-database.md))
 - [x] Repository layout: frontend/backend split ([ADR 0003](adr/0003-repository-layout.md))
 - [ ] Frontend stack: React Native with Expo for the patient app, Next.js for the provider portal (planned; ADR when the first app starts)
-- [ ] Authentication approach (`backend/auth-service`)
+- [x] Authentication: auth-service issuing JWT access tokens ([ADR 0004](adr/0004-authentication.md))
 - [ ] Hosting / cloud provider
