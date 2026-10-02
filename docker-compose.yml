@@ -1,7 +1,7 @@
 # Runs the whole backend locally.
 #   Everything:         docker compose up -d --build
 #   Only the database:  docker compose up -d postgres   (when running the API with npm)
-# Credentials below are for local development only.
+# Credentials and the JWT secret below are for local development only.
 services:
   postgres:
     image: postgres:18-alpine
@@ -19,6 +19,17 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  auth-service:
+    build: ./backend/auth-service
+    environment:
+      DATABASE_URL: postgres://chroniccare:chroniccare@postgres:5432/chroniccare_auth
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-0123456789}
+    ports:
+      - '3002:3002'
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   medication-service:
     build: ./backend/medication-service
