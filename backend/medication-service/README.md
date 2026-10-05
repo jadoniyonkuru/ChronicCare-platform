@@ -67,6 +67,10 @@ curl http://localhost:3001/health
 | `GET` | `/api/v1/patients/:patientId/medications/:medicationId/doses?from&to` | List logged doses for a date range |
 | `DELETE` | `/api/v1/patients/:patientId/medications/:medicationId/doses/:date/:time` | Undo a logged dose |
 | `GET` | `/api/v1/patients/:patientId/adherence?from&to` | Adherence report across all medications |
+| `POST` | `/api/v1/patients/:patientId/care-team` | Add a provider (`{"providerId": "…"}`) to the patient's care team |
+| `GET` | `/api/v1/patients/:patientId/care-team` | List the providers on the care team |
+| `DELETE` | `/api/v1/patients/:patientId/care-team/:providerId` | Remove a provider; their access ends immediately |
+| `GET` | `/api/v1/providers/:providerId/patients` | The patients who added this provider (provider only, their own list) |
 
 All feature endpoints live under the versioned prefix `/api/v1`. Patient and medication ids are UUIDs.
 
@@ -77,10 +81,11 @@ Every endpoint except `/health` and `/docs` needs an access token from [auth-ser
 | Caller | Can do |
 |---|---|
 | No or invalid token | Nothing: `401 Unauthorized` |
-| Patient | Everything on their own data (`:patientId` must be their user id); other patients: `403 Forbidden` |
-| Provider | Read any patient's medications, doses and adherence; changes: `403 Forbidden` |
+| Patient | Everything on their own data (`:patientId` must be their user id), including choosing their care team; other patients: `403 Forbidden` |
+| Provider on the patient's care team | Read the patient's medications, doses, adherence and care team; changes: `403 Forbidden` |
+| Any other provider | `403 Forbidden` |
 
-Provider access will be limited to the provider's own patients once care teams exist.
+Care teams are based on patient consent: only the patient adds or removes providers, and access is checked on every request, so removing a provider takes effect immediately ([ADR 0005](../../docs/architecture/adr/0005-care-teams.md)).
 
 ```bash
 # Log in (see auth-service) and keep the token
@@ -169,6 +174,7 @@ src/
 ├── app.module.ts    # Root module
 ├── app.setup.ts     # App-wide config shared by main.ts and e2e tests
 ├── adherence/       # Adherence calculation and report endpoint
+├── care-team/       # Providers a patient allows to read their data
 ├── auth/            # Access-token verification and patient access rules
 ├── common/          # Clock, date helpers, shared validators
 ├── database/        # Kysely client, table types, migrations

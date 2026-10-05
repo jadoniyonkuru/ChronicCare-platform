@@ -13,7 +13,7 @@ A chronic disease management platform that helps patients with diabetes, hyperte
 | Component | Status |
 |---|---|
 | [backend/auth-service](backend/auth-service/) | Patient registration and login with scrypt-hashed passwords, rate limiting and JWT access tokens |
-| [backend/medication-service](backend/medication-service/) | Medication schedules, dose logging (taken / skipped) and adherence reports. Every request needs an access token; patients only reach their own data, providers have read-only access |
+| [backend/medication-service](backend/medication-service/) | Medication schedules, dose logging (taken / skipped) and adherence reports. Every request needs an access token; patients only reach their own data and choose which providers (their care team) can read it |
 | [frontend/](frontend/) | Planned: patient mobile app and provider web portal |
 
 Both services have Swagger API docs, Docker images, demo data, and unit, end-to-end and PostgreSQL integration tests. A full-stack CI job starts everything with Docker Compose and tests it over HTTP on every push.
@@ -66,7 +66,7 @@ Then:
 2. Open **http://localhost:3001/docs**, click **Authorize**, and paste the token.
 3. Call `GET /api/v1/patients/{patientId}/adherence` with patient id `5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01`.
 
-Log in as `provider@demo.chroniccare.dev` (same password) to see the same report as a doctor, read-only.
+Log in as `provider@demo.chroniccare.dev` (same password) to see the same report as a doctor on the demo patient's care team, read-only.
 
 Stop everything with `docker compose down`. To develop with hot reload instead, see each service's README.
 
