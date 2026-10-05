@@ -43,4 +43,5 @@ Planned later: an API gateway in front of the services, AI/ML insights (Python),
 - [x] Repository layout: frontend/backend split ([ADR 0003](adr/0003-repository-layout.md))
 - [ ] Frontend stack: React Native with Expo for the patient app, Next.js for the provider portal (planned; ADR when the first app starts)
 - [x] Authentication: auth-service issuing JWT access tokens ([ADR 0004](adr/0004-authentication.md))
+- [x] Provider access: care teams based on patient consent ([ADR 0005](adr/0005-care-teams.md))
 - [ ] Hosting / cloud provider
