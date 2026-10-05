@@ -99,29 +99,62 @@ describe('Access control (e2e)', () => {
   });
 
   describe('providers', () => {
-    it("can read a patient's medications and adherence", async () => {
+    const asProvider = (method: 'get' | 'post', url: string) =>
+      request(app.getHttpServer())
+        [method](url)
+        .set('Authorization', bearer(PROVIDER, 'provider'));
+    const addToCareTeam = () =>
+      request(app.getHttpServer())
+        .post(`/api/v1/patients/${PATIENT}/care-team`)
+        .set('Authorization', bearer(PATIENT))
+        .send({ providerId: PROVIDER })
+        .expect(201);
+
+    beforeEach(async () => {
       await request(app.getHttpServer())
         .post(MEDICATIONS)
         .set('Authorization', bearer(PATIENT))
         .send(metformin)
         .expect(201);
-
-      await request(app.getHttpServer())
-        .get(MEDICATIONS)
-        .set('Authorization', bearer(PROVIDER, 'provider'))
-        .expect(200)
-        .expect((res) => expect(res.body).toHaveLength(1));
-      await request(app.getHttpServer())
-        .get(`/api/v1/patients/${PATIENT}/adherence`)
-        .set('Authorization', bearer(PROVIDER, 'provider'))
-        .expect(200);
     });
 
-    it("cannot change a patient's medications (403)", async () => {
+    it("cannot read a patient's data before being added to the care team (403)", async () => {
+      await asProvider('get', MEDICATIONS).expect(403);
+      await asProvider('get', `/api/v1/patients/${PATIENT}/adherence`).expect(
+        403,
+      );
+    });
+
+    it("can read a patient's medications and adherence once on the care team", async () => {
+      await addToCareTeam();
+
+      await asProvider('get', MEDICATIONS)
+        .expect(200)
+        .expect((res) => expect(res.body).toHaveLength(1));
+      await asProvider('get', `/api/v1/patients/${PATIENT}/adherence`).expect(
+        200,
+      );
+    });
+
+    it('loses access as soon as the patient removes them', async () => {
+      await addToCareTeam();
       await request(app.getHttpServer())
-        .post(MEDICATIONS)
-        .set('Authorization', bearer(PROVIDER, 'provider'))
-        .send(metformin)
+        .delete(`/api/v1/patients/${PATIENT}/care-team/${PROVIDER}`)
+        .set('Authorization', bearer(PATIENT))
+        .expect(204);
+
+      await asProvider('get', MEDICATIONS).expect(403);
+    });
+
+    it("cannot change a patient's medications even on the care team (403)", async () => {
+      await addToCareTeam();
+
+      await asProvider('post', MEDICATIONS).send(metformin).expect(403);
+    });
+
+    it('cannot add themselves to a care team (403)', async () => {
+      await asProvider('post', `/api/v1/patients/${PATIENT}/care-team`)
+        .send({ providerId: PROVIDER })
         .expect(403);
     });
   });

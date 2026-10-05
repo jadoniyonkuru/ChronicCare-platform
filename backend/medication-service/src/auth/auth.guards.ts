@@ -9,7 +9,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { isUUID } from 'class-validator';
 import type { Request } from 'express';
+import { CareTeamRepository } from '../care-team/care-team.repository.js';
 
 /** Must match the tokens issued by auth-service (see ADR 0004). */
 export const TOKEN_ISSUER = 'chroniccare-auth';
@@ -84,21 +86,28 @@ const READ_METHODS = new Set(['GET', 'HEAD']);
 /**
  * Applied globally after AccessTokenGuard, to every route with a :patientId:
  * - a patient may only access their own data;
- * - a provider may read any patient's data but not change it.
- *
- * Provider access will be narrowed to the provider's own patients once care
- * teams exist (see the roadmap).
+ * - a provider may read the data of patients who added them to their care
+ *   team (ADR 0005), and never change it.
  */
 @Injectable()
 export class PatientAccessGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  constructor(private readonly careTeam: CareTeamRepository) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const patientId = request.params?.patientId;
     const user = request.user;
     if (patientId === undefined || user === undefined) return true;
 
+    // An invalid id cannot belong to anyone; let validation answer with 400.
+    if (typeof patientId !== 'string' || !isUUID(patientId)) return true;
+
     if (user.role === 'patient' && user.id === patientId) return true;
-    if (user.role === 'provider' && READ_METHODS.has(request.method)) {
+    if (
+      user.role === 'provider' &&
+      READ_METHODS.has(request.method) &&
+      (await this.careTeam.isMember(patientId, user.id))
+    ) {
       return true;
     }
     throw new ForbiddenException(

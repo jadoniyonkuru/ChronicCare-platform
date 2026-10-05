@@ -93,7 +93,7 @@ describe('Adherence (e2e)', () => {
   });
 
   it('rejects an invalid patient id or range with 400', async () => {
-    // A provider may read any patient, so the request reaches validation.
+    // An invalid id is answered by validation before any access check.
     await request(app.getHttpServer())
       .get('/api/v1/patients/nope/adherence')
       .set('Authorization', bearer(PROVIDER, 'provider'))

@@ -1,10 +1,12 @@
 /**
- * Fills the database with a demo patient: three medications and 30 days of
- * dose history. Safe to run repeatedly; it only replaces the demo patient's
- * data. Run with `npm run db:seed` (or inside Docker, see the README).
+ * Fills the database with a demo patient: three medications, 30 days of
+ * dose history, and the demo provider on their care team. Safe to run
+ * repeatedly; it only replaces the demo patient's data. Run with
+ * `npm run db:seed` (or inside Docker, see the README).
  */
 import { randomUUID } from 'node:crypto';
 import { calculateAdherence } from '../adherence/calculate-adherence.js';
+import { PostgresCareTeamRepository } from '../care-team/postgres-care-team.repository.js';
 import { addDays, toDateString } from '../common/dates.js';
 import type { DoseLog } from '../doses/entities/dose-log.entity.js';
 import { PostgresDoseLogsRepository } from '../doses/postgres-dose-logs.repository.js';
@@ -12,7 +14,9 @@ import type { Medication } from '../medications/entities/medication.entity.js';
 import { PostgresMedicationsRepository } from '../medications/postgres-medications.repository.js';
 import { createDatabase, migrateToLatest } from './create-database.js';
 
+/** Same ids as the demo accounts created by auth-service's seed script. */
 export const DEMO_PATIENT_ID = '5f0c7a1e-8a51-4a8e-9a4b-1f7c3a2b9d01';
+export const DEMO_PROVIDER_ID = '7b1d9e2f-3c4a-4b5d-8e6f-0a1b2c3d4e5f';
 const HISTORY_DAYS = 30;
 
 const DEMO_MEDICATIONS = [
@@ -141,6 +145,14 @@ async function seed(): Promise<void> {
       );
     }
     console.log(`  Overall       ${report.adherencePercent}%`);
+
+    // The demo patient shares their data with the demo provider (ADR 0005).
+    await new PostgresCareTeamRepository(db).add({
+      patientId: DEMO_PATIENT_ID,
+      providerId: DEMO_PROVIDER_ID,
+      addedAt: new Date().toISOString(),
+    });
+    console.log(`  Care team     provider ${DEMO_PROVIDER_ID}`);
   } finally {
     await db.destroy();
   }

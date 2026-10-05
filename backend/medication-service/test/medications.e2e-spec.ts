@@ -79,7 +79,7 @@ describe('Medications (e2e)', () => {
     });
 
     it('rejects a non-UUID patient id with 400', () => {
-      // A provider may read any patient, so the request reaches validation.
+      // An invalid id is answered by validation before any access check.
       return request(app.getHttpServer())
         .get('/api/v1/patients/not-a-uuid/medications')
         .set('Authorization', bearer(PROVIDER, 'provider'))

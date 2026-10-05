@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
+import { CareTeamModule } from '../care-team/care-team.module.js';
 import { AccessTokenGuard, PatientAccessGuard } from './auth.guards.js';
 
 const MIN_SECRET_LENGTH = 32;
@@ -12,6 +13,7 @@ const MIN_SECRET_LENGTH = 32;
  */
 @Module({
   imports: [
+    CareTeamModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
