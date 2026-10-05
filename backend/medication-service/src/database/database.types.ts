@@ -31,9 +31,16 @@ export interface DoseLogsTable {
   updatedAt: ColumnType<Date, string, string>;
 }
 
+export interface CareTeamMembersTable {
+  patientId: string;
+  providerId: string;
+  addedAt: ColumnType<Date, string, string>;
+}
+
 export interface Database {
   medications: MedicationsTable;
   doseLogs: DoseLogsTable;
+  careTeamMembers: CareTeamMembersTable;
 }
 
 export type DatabaseClient = Kysely<Database>;
