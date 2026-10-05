@@ -19,6 +19,7 @@ export function setupOpenApi(app: INestApplication): void {
     .addTag('medications', "A patient's medication schedules")
     .addTag('doses', 'Recording whether scheduled doses were taken')
     .addTag('adherence', 'How consistently a patient takes their medication')
+    .addTag('care team', 'Providers a patient allows to read their data')
     .addTag('health', 'Service status')
     .build();
 
